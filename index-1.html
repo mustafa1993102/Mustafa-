@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>منبّهاتي</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0E1428">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="منبّهاتي">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E1428; --surface:#182047; --surface2:#212a56; --surface3:#293463;
+  --text:#EEF1FB; --muted:#8992BE;
+  --sun:#F5A25C; --sun-dim:#6b4a2c;
+  --mint:#5FE3C4; --mint-dim:#2c5850;
+  --danger:#F2685C;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  min-height:100%;margin:0;background:radial-gradient(circle at 50% -10%,#1a2350 0%,var(--bg) 55%);
+  color:var(--text);font-family:'Tajawal',sans-serif;
+  display:flex;justify-content:center;padding:28px 16px;
+}
+.card{width:100%;max-width:420px;}
+.top{text-align:center;margin-bottom:22px}
+.top h1{font-size:20px;font-weight:700;margin:0}
+.top .sub{color:var(--muted);font-size:13px;margin-top:4px}
+
+.alarm{
+  background:var(--surface);border-radius:18px;margin-bottom:12px;
+  border:1px solid rgba(255,255,255,.05);overflow:hidden;
+}
+.alarm.off{opacity:.55}
+.head{
+  display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;
+}
+.head .time{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.head .info{flex:1;min-width:0}
+.head .info .tag{font-size:12.5px;color:var(--mint);font-weight:700}
+.head .info .tag.fixed{color:var(--muted)}
+.head .info .tone{font-size:11.5px;color:var(--muted);margin-top:1px}
+.head .chev{color:var(--muted);font-size:14px;transition:transform .2s;flex:0 0 auto}
+.alarm.expanded .chev{transform:rotate(180deg)}
+
+.switch{position:relative;width:46px;height:26px;flex:0 0 auto}
+.switch input{opacity:0;width:100%;height:100%;position:absolute;margin:0;cursor:pointer;z-index:1}
+.track{position:absolute;inset:0;background:var(--surface2);border-radius:20px;transition:background .2s}
+.thumb{position:absolute;top:3px;inset-inline-start:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:.2s}
+.switch input:checked + .track{background:var(--sun-dim)}
+.switch input:checked + .track + .thumb{inset-inline-start:23px;background:var(--sun)}
+
+.body{display:none;padding:0 18px 18px}
+.alarm.expanded .body{display:block}
+
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row + .row{margin-top:14px}
+.row-title{font-weight:700;font-size:14.5px}
+.row-sub{color:var(--muted);font-size:12px;margin-top:2px}
+
+.timepick input[type=time]{
+  background:var(--surface2);border:none;border-radius:10px;color:var(--text);
+  font-family:'Tajawal',sans-serif;font-size:16px;font-weight:700;padding:7px 12px;
+  color-scheme:dark;text-align:center;
+}
+
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{
+  width:30px;height:30px;border-radius:9px;border:none;background:var(--surface2);
+  color:var(--text);font-size:16px;font-weight:700;cursor:pointer;
+}
+.stepper .val{min-width:28px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;font-size:13.5px}
+
+.mode{display:flex;background:var(--surface2);border-radius:11px;padding:3px;gap:3px;margin-top:8px}
+.mode button{
+  flex:1;border:none;background:transparent;color:var(--muted);padding:7px 4px;
+  border-radius:8px;font-family:'Tajawal',sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;
+}
+.mode button.active{background:var(--mint-dim);color:var(--mint)}
+
+.target input[type=time]{
+  background:var(--surface2);border:none;border-radius:9px;color:var(--text);
+  font-family:'Tajawal',sans-serif;font-size:14px;font-weight:700;padding:6px 9px;
+  color-scheme:dark;
+}
+.target input[type=time]:disabled{opacity:.4}
+.targetrow{display:flex;align-items:center;gap:8px}
+
+.note{font-size:12px;color:var(--muted);line-height:1.7;margin-top:12px}
+.note b{color:var(--text)}
+
+.tones{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-top:8px;scrollbar-width:none}
+.tones::-webkit-scrollbar{display:none}
+.tonechip{
+  flex:0 0 auto;display:flex;align-items:center;gap:6px;
+  background:var(--surface2);border:1px solid transparent;border-radius:20px;
+  padding:7px 12px;cursor:pointer;font-size:12.5px;color:var(--muted);white-space:nowrap;
+}
+.tonechip.active{background:var(--mint-dim);color:var(--mint);border-color:rgba(95,227,196,.3)}
+.tonechip .play{font-size:11px}
+
+.preview{margin-top:14px}
+.preview-title{font-weight:700;font-size:13px;margin-bottom:8px;color:var(--muted)}
+.preview-list{display:flex;flex-direction:column;gap:6px}
+.preview-item{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);border-radius:10px;padding:8px 12px;font-size:12.5px;
+}
+.preview-item .day{color:var(--muted)}
+.preview-item .ptime{font-weight:700;font-variant-numeric:tabular-nums}
+.preview-item.reached .ptime{color:var(--mint)}
+
+.delete{
+  margin-top:16px;width:100%;padding:11px;border-radius:11px;border:none;
+  background:rgba(242,104,92,.12);color:var(--danger);font-family:'Tajawal',sans-serif;
+  font-weight:700;font-size:13.5px;cursor:pointer;
+}
+
+.addwrap{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.addbtn{
+  width:100%;padding:15px;border-radius:16px;border:2px dashed var(--surface3);
+  background:transparent;color:var(--muted);font-family:'Tajawal',sans-serif;
+  font-weight:700;font-size:14.5px;cursor:pointer;
+}
+.addbtn:active{background:var(--surface)}
+.addbtn.secondary{border-style:solid;border-color:var(--surface2);color:var(--text);background:var(--surface)}
+.hint{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.7;margin-top:4px}
+
+#ringOverlay{position:fixed;inset:0;z-index:99;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 30%,#3a2a4f 0%,#0E1428 70%);text-align:center;padding:24px}
+#ringOverlay .ico{font-size:72px;animation:shake .5s infinite}
+@keyframes shake{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+#ringOverlay .rt{font-size:56px;font-weight:900}
+#ringOverlay .rl{color:var(--muted);font-size:15px}
+#ringOverlay button{width:100%;max-width:300px;padding:16px;border-radius:16px;border:none;font-family:'Tajawal',sans-serif;font-weight:900;font-size:18px;cursor:pointer}
+#ringStop{background:var(--danger);color:#2a0f0c}
+#ringSnooze{background:var(--mint-dim);color:var(--mint)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <h1>منبّهاتي</h1>
+    <div class="sub">لكل منبّه توقيته وضبطه ونغمته الخاصة</div>
+  </div>
+  <div id="alarmsList"></div>
+  <div class="addwrap">
+    <button class="addbtn" id="addAlarm">+ إضافة منبّه جديد</button>
+    <button class="addbtn secondary" id="testRing">🔔 تجربة الرنين الآن</button>
+    <button class="addbtn secondary" id="addFromDevice">📱 إضافة منبّهات من منبّهات الجهاز</button>
+  </div>
+  <div class="hint" id="deviceHint"></div>
+  <div class="hint">للرنين: اترك الصفحة مفتوحة والشاشة شغّالة (قيد المتصفحات).</div>
+</div>
+
+<div id="ringOverlay"><div class="ico">⏰</div><div class="rt" id="ringTime">--</div><div class="rl">المنبّه يرنّ الآن</div>
+<button id="ringStop">إيقاف</button><button id="ringSnooze">غفوة 5 دقائق</button></div>
+<script>
+const $ = id => document.getElementById(id);
+const dayNames = ['اليوم','غدًا','بعد غد','يوم 4','يوم 5','يوم 6','يوم 7'];
+const TONES = ['كلاسيكي','جرس','نغمة هادئة','نبض متكرر','طائر الصباح'];
+let uid = 3;
+let alarms = [
+  { id:1, time:'06:30', enabled:true,  mode:'earlier', step:5, target:{on:true, time:'06:00'}, tone:'كلاسيكي', expanded:true },
+  { id:2, time:'07:15', enabled:true,  mode:'fixed',   step:5, target:{on:false, time:'06:00'}, tone:'جرس', expanded:false },
+];
+
+let actx = null;
+function audioCtx(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+
+function beep(freq, start, dur, gainVal=0.18, type='sine'){
+  const ctx = audioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type; osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0, ctx.currentTime+start);
+  gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime+start+0.02);
+  gain.gain.linearRampToValueAtTime(0, ctx.currentTime+start+dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(ctx.currentTime+start); osc.stop(ctx.currentTime+start+dur+0.02);
+}
+
+const TONE_PLAYERS = {
+  'كلاسيكي': ()=>{ beep(880,0,.15); beep(880,.25,.15); beep(880,.5,.15); },
+  'جرس': ()=>{ beep(1046,0,.5,.16,'triangle'); beep(1568,.08,.4,.1,'triangle'); },
+  'نغمة هادئة': ()=>{ beep(523,0,.35,.12,'sine'); beep(659,.3,.35,.12,'sine'); beep(784,.6,.5,.12,'sine'); },
+  'نبض متكرر': ()=>{ for(let i=0;i<5;i++) beep(700,i*0.18,.09,.16,'square'); },
+  'طائر الصباح': ()=>{ [988,1319,1175,1568].forEach((f,i)=>beep(f,i*0.13,.11,.13,'sine')); },
+};
+
+function playTone(name){ (TONE_PLAYERS[name]||TONE_PLAYERS['كلاسيكي'])(); }
+
+function toMinutes(hhmm){ const [h,m]=hhmm.split(':').map(Number); return h*60+m; }
+function fmt12(mins){
+  mins = ((mins%1440)+1440)%1440;
+  let h=Math.floor(mins/60), m=mins%60;
+  const ampm = h>=12 ? 'م':'ص';
+  let h12=h%12; if(h12===0) h12=12;
+  return { text: h12+':'+String(m).padStart(2,'0'), ampm };
+}
+
+function modeLabel(a){
+  if(a.mode==='fixed') return { text:'ثابت كل يوم', cls:'fixed' };
+  if(a.mode==='earlier') return { text:`يتقدّم ${a.step} د/يوم`, cls:'' };
+  return { text:`يتأخر ${a.step} د/يوم`, cls:'' };
+}
+
+function noteText(a){
+  const targetTxt = a.target.on ? `، حتى يصل إلى ${fmt12(toMinutes(a.target.time)).text} فيتوقف عندها.` : '.';
+  if(a.mode==='earlier') return `يتقدّم وقت هذا المنبّه <b>${a.step}</b> دقيقة كل يوم عن اليوم السابق${targetTxt}`;
+  if(a.mode==='later') return `يتأخر وقت هذا المنبّه <b>${a.step}</b> دقيقة كل يوم عن اليوم السابق${targetTxt}`;
+  return `وقت هذا المنبّه يبقى ثابتًا كل يوم دون تغيير.`;
+}
+
+function buildPreview(a){
+  const start = toMinutes(a.time);
+  const target = a.target.on ? toMinutes(a.target.time) : null;
+  let rows = '';
+  for(let i=0;i<7;i++){
+    let mins;
+    if(a.mode==='fixed'){ mins = start; }
+    else{
+      const delta = a.mode==='earlier' ? -a.step*i : a.step*i;
+      mins = start + delta;
+      if(target!==null){
+        if(a.mode==='earlier' && mins<=target) mins = target;
+        if(a.mode==='later' && mins>=target) mins = target;
+      }
+    }
+    const f = fmt12(mins);
+    const reached = target!==null && mins===target && a.mode!=='fixed';
+    rows += `<div class="preview-item${reached?' reached':''}"><span class="day">${dayNames[i]}</span><span class="ptime">${f.text} ${f.ampm}</span></div>`;
+  }
+  return rows;
+}
+
+function render(){
+  const list = $('alarmsList');
+  list.innerHTML = alarms.map(a=>{
+    const f = fmt12(toMinutes(a.time));
+    const lbl = modeLabel(a);
+    return `
+    <div class="alarm ${a.enabled?'':'off'} ${a.expanded?'expanded':''}" data-id="${a.id}">
+      <div class="head" data-action="toggleExpand">
+        <div class="time">${f.text} <span style="font-size:13px;color:var(--sun);font-weight:700">${f.ampm}</span></div>
+        <div class="info">
+          <div class="tag ${lbl.cls}">${lbl.text}</div>
+          <div class="tone">🔔 ${a.tone}</div>
+        </div>
+        <label class="switch" onclick="event.stopPropagation()">
+          <input type="checkbox" data-action="toggleEnabled" ${a.enabled?'checked':''}>
+          <span class="track"></span><span class="thumb"></span>
+        </label>
+        <div class="chev">▾</div>
+      </div>
+      <div class="body">
+        <div class="row">
+          <div class="row-title">الوقت</div>
+          <div class="timepick"><input type="time" data-field="time" value="${a.time}"></div>
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div class="row-title">النغمة</div>
+        </div>
+        <div class="tones">
+          ${TONES.map(t=>`<div class="tonechip ${a.tone===t?'active':''}" data-action="setTone" data-tone="${t}"><span class="play">▶</span>${t}</div>`).join('')}
+        </div>
+
+        <div class="row" style="margin-top:16px">
+          <div class="row-title">الضبط اليومي التلقائي</div>
+        </div>
+        <div class="mode">
+          <button data-action="setMode" data-mode="earlier" class="${a.mode==='earlier'?'active':''}">أبكر</button>
+          <button data-action="setMode" data-mode="fixed" class="${a.mode==='fixed'?'active':''}">ثابت</button>
+          <button data-action="setMode" data-mode="later" class="${a.mode==='later'?'active':''}">أتأخر</button>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="row-title">مقدار التغيير</div>
+            <div class="row-sub">دقيقة لكل يوم</div>
+          </div>
+          <div class="stepper">
+            <button data-action="stepMinus">−</button>
+            <div class="val">${a.step}</div>
+            <button data-action="stepPlus">+</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="row-title">التوقف عند</div>
+            <div class="row-sub">اختياري</div>
+          </div>
+          <div class="targetrow">
+            <input type="time" data-field="targetTime" value="${a.target.time}" ${a.target.on?'':'disabled'}>
+            <label class="switch">
+              <input type="checkbox" data-action="toggleTarget" ${a.target.on?'checked':''}>
+              <span class="track"></span><span class="thumb"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="note">${noteText(a)}</div>
+
+        <div class="preview">
+          <div class="preview-title">معاينة الأيام القادمة</div>
+          <div class="preview-list">${buildPreview(a)}</div>
+        </div>
+
+        <button class="delete" data-action="delete">حذف هذا المنبّه</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+$('alarmsList').addEventListener('click', e=>{
+  const cardEl = e.target.closest('.alarm');
+  if(!cardEl) return;
+  const id = Number(cardEl.dataset.id);
+  const a = alarms.find(x=>x.id===id);
+  const actionEl = e.target.closest('[data-action]');
+  if(!actionEl) return;
+  const action = actionEl.dataset.action;
+
+  if(action==='toggleExpand'){ a.expanded = !a.expanded; render(); }
+  else if(action==='setMode'){ a.mode = actionEl.dataset.mode; render(); }
+  else if(action==='setTone'){ a.tone = actionEl.dataset.tone; playTone(a.tone); render(); }
+  else if(action==='stepMinus'){ a.step = Math.max(1, a.step-1); render(); }
+  else if(action==='stepPlus'){ a.step = Math.min(30, a.step+1); render(); }
+  else if(action==='delete'){ alarms = alarms.filter(x=>x.id!==id); render(); }
+});
+
+$('alarmsList').addEventListener('change', e=>{
+  const cardEl = e.target.closest('.alarm');
+  if(!cardEl) return;
+  const id = Number(cardEl.dataset.id);
+  const a = alarms.find(x=>x.id===id);
+  const actionEl = e.target.closest('[data-action]');
+  const fieldEl = e.target.closest('[data-field]');
+
+  if(actionEl && actionEl.dataset.action==='toggleEnabled'){ a.enabled = actionEl.checked; render(); }
+  else if(actionEl && actionEl.dataset.action==='toggleTarget'){ a.target.on = actionEl.checked; render(); }
+  else if(fieldEl && fieldEl.dataset.field==='time'){ a.time = fieldEl.value; a.startDay = todayStr(); render(); }
+  else if(fieldEl && fieldEl.dataset.field==='targetTime'){ a.target.time = fieldEl.value; render(); }
+});
+
+$('addAlarm').onclick = ()=>{
+  uid++;
+  alarms.push({ id:uid, time:'08:00', enabled:true, mode:'fixed', step:5, target:{on:false, time:'06:00'}, tone:'كلاسيكي', expanded:true });
+  render();
+};
+
+$('addFromDevice').onclick = ()=>{
+  $('deviceHint').textContent = 'صفحة الويب لا يمكنها قراءة منبّهات جهازك مباشرة لأسباب تتعلق بالخصوصية — يمكنك إضافتها يدويًا هنا بنفس أوقاتها.';
+};
+
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function daysSince(s){const [y,m,d]=s.split('-').map(Number);const a=new Date(y,m-1,d),b=new Date();b.setHours(0,0,0,0);return Math.max(0,Math.round((b-a)/86400000));}
+function effMins(a){
+  const start=toMinutes(a.time); if(a.mode==='fixed') return start;
+  if(!a.startDay) a.startDay=todayStr();
+  const i=daysSince(a.startDay);
+  let m=start+(a.mode==='earlier'?-a.step*i:a.step*i);
+  if(a.target.on){const t=toMinutes(a.target.time); if(a.mode==='earlier'&&m<=t)m=t; if(a.mode==='later'&&m>=t)m=t;}
+  return ((m%1440)+1440)%1440;
+}
+let ringTimer=null, ringAlarm=null, fired={}, snoozes=[];
+function startRing(a,label){
+  ringAlarm=a; $('ringTime').textContent=label; $('ringOverlay').style.display='flex';
+  try{audioCtx().resume();}catch(e){}
+  const tone=a.tone||'كلاسيكي'; playTone(tone); clearInterval(ringTimer); let n=0;
+  ringTimer=setInterval(()=>{playTone(tone); if(navigator.vibrate) navigator.vibrate([400,200,400]); if(++n>40) stopRing();},1500);
+}
+function stopRing(){clearInterval(ringTimer);$('ringOverlay').style.display='none'; if(navigator.vibrate) navigator.vibrate(0);}
+$('ringStop').onclick=stopRing;
+$('ringSnooze').onclick=()=>{const a=ringAlarm; stopRing(); snoozes.push({a,at:Date.now()+5*60000});};
+$('testRing').onclick=()=>startRing(alarms[0]||{tone:'كلاسيكي'},'تجربة');
+async function keepAwake(){try{if('wakeLock' in navigator) await navigator.wakeLock.request('screen');}catch(e){}}
+document.addEventListener('pointerdown',()=>{try{audioCtx().resume();}catch(e){} keepAwake();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible') keepAwake();});
+setInterval(()=>{
+  const now=new Date(), key=todayStr(), nm=now.getHours()*60+now.getMinutes();
+  alarms.forEach(a=>{ if(!a.enabled) return; const k=a.id+'|'+key+'|'+nm;
+    if(effMins(a)===nm && !fired[k]){fired[k]=1; const f=fmt12(nm); startRing(a,f.text+' '+f.ampm);} });
+  snoozes=snoozes.filter(s=>{ if(Date.now()>=s.at){startRing(s.a,'غفوة'); return false;} return true;});
+},1000);
+
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+render();
+</script>
+</body>
+</html>
